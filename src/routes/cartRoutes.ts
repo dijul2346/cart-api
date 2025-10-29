@@ -1,117 +1,132 @@
+/**
+ * @swagger
+ * tags:
+ *   name: Cart
+ *   description: Cart management API
+ */
+
+/**
+ * @swagger
+ * /api/cart/add:
+ *   post:
+ *     summary: Add a product to the cart
+ *     tags: [Cart]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: "64ff5c2b2c3f2f6a9d7c8a2a"
+ *               productId:
+ *                 type: string
+ *                 example: "P001"
+ *               quantity:
+ *                 type: integer
+ *                 example: 2
+ *     responses:
+ *       200:
+ *         description: Product added successfully
+ *       400:
+ *         description: Invalid input or product not found
+ */
+
+/**
+ * @swagger
+ * /api/cart/remove:
+ *   delete:
+ *     summary: Remove a product from the cart
+ *     tags: [Cart]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               productId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Product removed successfully
+ *       404:
+ *         description: Product not found in cart
+ */
+
+/**
+ * @swagger
+ * /api/cart/update:
+ *   put:
+ *     summary: Update quantity of a product in cart
+ *     tags: [Cart]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *               productId:
+ *                 type: string
+ *               quantity:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Quantity updated successfully
+ *       400:
+ *         description: Invalid quantity
+ */
+
+/**
+ * @swagger
+ * /api/cart/{userId}:
+ *   get:
+ *     summary: Get all items in a user's cart
+ *     tags: [Cart]
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: MongoDB user ID
+ *     responses:
+ *       200:
+ *         description: List of cart items
+ *       404:
+ *         description: Cart not found
+ */
+
+
+
+
+
 import express from "express";
-import Cart from "../models/Cart";
-import { Product } from "../models/Product";
+import { validateProductId, validateUserId } from "../middleware/validators";
+import { addToCart } from "./cart/addToCart";
+import { updateCart } from "./cart/updateCart";
+import { removeFromCart } from "./cart/removeFromCart";
+import { viewCart } from "./cart/viewCart";
 
 const router = express.Router();
 
-/* -------------------- ADD TO CART -------------------- */
-router.post("/add", async (req, res) => {
-  try {
-    const { userId, prod_id, quantity = 1 } = req.body;
+// Add to cart
+router.post("/add", validateUserId, validateProductId, addToCart);
 
-    const product = await Product.findOne({ prod_id });
-    if (!product) return res.status(404).json({ message: "Product not found" });
+// Update quantity
+router.put("/update", validateUserId, validateProductId, updateCart);
 
-    if ((product.stock ?? 0) < quantity)
-      return res.status(400).json({ message: "Insufficient stock" });
+// Remove from cart
+router.delete("/remove/:userId/:prod_id", validateUserId, validateProductId, removeFromCart);
 
-    let cart = await Cart.findOne({ user: userId });
-    if (!cart) cart = new Cart({ user: userId, items: [] });
-
-    const existingItem = cart.items.find((item) => item.productId === prod_id);
-    if (existingItem) {
-      existingItem.quantity += quantity;
-    } else {
-      cart.items.push({
-        productId: prod_id,
-        name: product.name,
-        price: product.price,
-        quantity,
-      });
-    }
-
-    product.stock = (product.stock ?? 0) - quantity;
-    await product.save();
-    await cart.save();
-
-    res.status(200).json({ message: "Item added to cart", cart });
-  } catch (error) {
-    res.status(500).json({ message: "Error adding to cart", error });
-  }
-});
-
-/* -------------------- UPDATE QUANTITY -------------------- */
-router.put("/update", async (req, res) => {
-  try {
-    const { userId, prod_id, quantity } = req.body;
-
-    if (quantity < 1)
-      return res.status(400).json({ message: "Quantity must be at least 1" });
-
-    const product = await Product.findOne({ prod_id });
-    if (!product) return res.status(404).json({ message: "Product not found" });
-
-    const cart = await Cart.findOne({ user: userId });
-    if (!cart) return res.status(404).json({ message: "Cart not found" });
-
-    const item = cart.items.find((i) => i.productId === prod_id);
-    if (!item) return res.status(404).json({ message: "Item not found in cart" });
-
-    const diff = quantity - item.quantity;
-
-    if (diff > 0 && (product.stock ?? 0) < diff)
-      return res.status(400).json({ message: "Not enough stock available" });
-
-    item.quantity = quantity;
-    product.stock = (product.stock ?? 0) - diff;
-
-    await product.save();
-    await cart.save();
-
-    res.status(200).json({ message: "Cart updated", cart });
-  } catch (error) {
-    res.status(500).json({ message: "Error updating cart", error });
-  }
-});
-
-/* -------------------- REMOVE FROM CART -------------------- */
-router.delete("/remove/:userId/:prod_id", async (req, res) => {
-  try {
-    const { userId, prod_id } = req.params;
-
-    const product = await Product.findOne({ prod_id });
-    if (!product) return res.status(404).json({ message: "Product not found" });
-
-    const cart = await Cart.findOne({ user: userId });
-    if (!cart) return res.status(404).json({ message: "Cart not found" });
-
-    const index = cart.items.findIndex((item) => item.productId === prod_id);
-    if (index === -1)
-      return res.status(404).json({ message: "Item not found in cart" });
-
-    const removedItem = cart.items[index];
-    product.stock = (product.stock ?? 0) + (removedItem?.quantity ?? 0);
-
-    cart.items.splice(index, 1);
-
-    await product.save();
-    await cart.save();
-
-    res.status(200).json({ message: "Item removed from cart", cart });
-  } catch (error) {
-    res.status(500).json({ message: "Error removing from cart", error });
-  }
-});
-
-/* -------------------- GET CART -------------------- */
-router.get("/:userId", async (req, res) => {
-  try {
-    const cart = await Cart.findOne({ user: req.params.userId });
-    if (!cart) return res.status(404).json({ message: "Cart not found" });
-    res.status(200).json(cart);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching cart", error });
-  }
-});
+// View cart
+router.get("/:userId", validateUserId, viewCart);
 
 export default router;
