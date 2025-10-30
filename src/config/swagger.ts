@@ -19,7 +19,7 @@ export const setupSwagger = (app: Express) => {
         },
       ],
     },
-  apis: ["./src/routes/*.ts", "./src/routes/cart/*.ts"], // Include all route files
+  apis: ["./src/routes/*.ts"], // Include all route files
   };
 
   const swaggerSpec = swaggerJsdoc(options);
