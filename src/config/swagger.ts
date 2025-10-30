@@ -15,8 +15,8 @@ export const setupSwagger = (app: Express) => {
       },
       servers: [
         {
-          url: "http://localhost:3000",
-          description: "Local server",
+          url: "https://cart-api-k25e.onrender.com",
+          description: "Production Server",
         },
       ],
     },
