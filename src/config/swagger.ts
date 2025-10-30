@@ -2,6 +2,7 @@
 import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import { Express } from "express";
+import path from "path";
 
 export const setupSwagger = (app: Express) => {
   const options = {
@@ -19,7 +20,9 @@ export const setupSwagger = (app: Express) => {
         },
       ],
     },
-  apis: ["./src/routes/*.ts"], // Include all route files
+    // Use absolute paths so swagger-jsdoc can find files whether running via ts-node or node
+    // scan all route files (including nested folders) for JSDoc Swagger comments
+    apis: [path.resolve(__dirname, "../routes/**/*.ts"), path.resolve(__dirname, "../routes/**/*.js")],
   };
 
   const swaggerSpec = swaggerJsdoc(options);
