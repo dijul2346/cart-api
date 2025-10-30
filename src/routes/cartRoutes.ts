@@ -5,7 +5,94 @@ import { addToCart, updateCart, removeFromCart, viewCart } from "../controllers/
 
 const router = express.Router();
 
-// Add to cart
+/**
+ * @swagger
+ * components:
+ * schemas:
+ * CartItem:
+ * type: object
+ * properties:
+ * _id:
+ * type: string
+ * description: The auto-generated id of the cart item
+ * example: "6900b7a143c1bf36d312e847"
+ * productId:
+ * type: string
+ * description: The unique product ID
+ * example: "P001"
+ * name:
+ * type: string
+ * description: The name of the product
+ * example: "Laptop"
+ * price:
+ * type: number
+ * description: The price of a single unit of the product
+ * example: 60000
+ * quantity:
+ * type: number
+ * description: The quantity of this item in the cart
+ * example: 5
+ * Cart:
+ * type: object
+ * properties:
+ * _id:
+ * type: string
+ * description: The auto-generated id of the cart
+ * example: "6900b7a143c1bf36d312e846"
+ * user:
+ * type: string
+ * description: The ID of the user who owns the cart
+ * example: "6900a73e9a16dfbde280c5ce"
+ * items:
+ * type: array
+ * items:
+ * $ref: '#/components/schemas/CartItem'
+ * responses:
+ * CartResponse:
+ * description: An object containing a message and the updated cart
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * message:
+ * type: string
+ * cart:
+ * $ref: '#/components/schemas/Cart'
+ * examples:
+ * itemAdded:
+ * value:
+ * message: "Item added to cart"
+ * cartUpdated:
+ * value:
+ * message: "Cart updated"
+ * itemRemoved:
+ * value:
+ * message: "Item removed from cart"
+ * ErrorResponse:
+ * description: Error response
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * message:
+ * type: string
+ * examples:
+ * CartNotFound:
+ * value:
+ * message: "Cart not found"
+ * ProductNotFound:
+ * value:
+ * message: "Product not found"
+ * ItemNotFound:
+ * value:
+ * message: "Item not found"
+ * InsufficientStock:
+ * value:
+ * message: "Insufficient stock"
+ */
+
 /**
  * @swagger
  * /cart/add:
@@ -40,9 +127,8 @@ const router = express.Router();
  * $ref: '#/components/responses/ErrorResponse'
  * 500:
  * $ref: '#/components/responses/ErrorResponse'
- * **/
+ */
 router.post("/add", validateUserId, validateProductId, addToCart);
-
 
 /**
  * @swagger
