@@ -14,7 +14,7 @@
  *               userId:
  *                 type: string
  *                 example: "69039ca9b2350860d960cb33"
- *               productId:
+ *               prod_id:
  *                 type: string
  *                 example: "P001"
  *               quantity:
@@ -43,7 +43,7 @@
  *               userId:
  *                 type: string
  *                 example: "69039ca9b2350860d960cb33"
- *               productId:
+ *               prod_id:
  *                 type: string
  *                 example: "P001"
  *               quantity:
