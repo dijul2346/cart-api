@@ -13,7 +13,7 @@
  *             properties:
  *               userId:
  *                 type: string
- *                 example: "64ff5c2b2c3f2f6a9d7c8a2a"
+ *                 example: "69039ca9b2350860d960cb33"
  *               productId:
  *                 type: string
  *                 example: "P001"
@@ -42,7 +42,7 @@
  *             properties:
  *               userId:
  *                 type: string
- *                 example: "64ff5c2b2c3f2f6a9d7c8a2a"
+ *                 example: "69039ca9b2350860d960cb33"
  *               productId:
  *                 type: string
  *                 example: "P001"
@@ -70,7 +70,7 @@
  *           type: string
  *         required: true
  *         description: MongoDB user ID
- *         example: "6900a73e9a16dfbde280c5ce"
+ *         example: "69039ca9b2350860d960cb33"
  *       - in: path
  *         name: prod_id
  *         schema:
@@ -98,7 +98,7 @@
  *           type: string
  *         required: true
  *         description: MongoDB user ID
- *         example: "6900a73e9a16dfbde280c5ce"
+ *         example: "69039ca9b2350860d960cb33"
  *     responses:
  *       200:
  *         description: List of cart items
